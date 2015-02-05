@@ -1,0 +1,112 @@
+<!--the web page for controlling the spark core--> 
+
+<!DOCTYPE HTML>
+
+<html>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+
+<body>
+ 
+  <style>
+
+    input[type=range] {
+      -webkit-appearance: none;
+      background-color: #97ffd6;
+      width: 300px;
+      height:30px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      background-color: #d1b8b8;
+      opacity: 0.9;
+      width: 30px;
+      height: 30px;
+      border:none;
+    }
+
+    #degBoxId{
+      margin-top: 50px;
+    }
+
+  </style>
+
+    <br><br><br>
+
+  <input type="range" name="degBox" id="degBoxId" min="0" max="1000" step="1" value="90" list="myData" onchange="setValue(this)">
+
+  <br><br><br>
+    
+  <input type="range" name="degBox" id="durBoxId" min="0" max="10" step="1" value="4" list="myData" onchange="setDurValue(this)">
+    <!-- This adds the tick marks to the range but does not in Safari -->
+    
+  <datalist id="myData">
+    <option value="0">
+    <option value="30">
+    <option value="60">
+    <option value="90">
+    <option value="120">
+    <option value="150">
+    <option value="180">
+  </datalist>
+
+  <br><br>
+
+  <button id="minusbutton" onclick="fineAdjust(-5)">&lArr; -5 &deg;</button>
+  
+  <button id="plusbutton"  onclick="fineAdjust(+5)">+5 &deg; &rArr;</button>
+    
+  <br><br>
+    
+  <span id="curPos"></span><br>
+
+  <script type="text/javascript">
+    var deviceID    = "<insert your device's ID here>";
+    var accessToken = "<insert your access token here>";
+    var setFunc = "setpos";
+    var setDurFunc = "setdur";
+
+    window.setInterval(function() {
+      requestURL = "https://api.spark.io/v1/devices/" + deviceID + "/" + getFunc + "/?access_token=" + accessToken;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("curPos").innerHTML = json.result + "&deg;";
+                 document.getElementById("curPos").style.fontSize = "28px";
+                 document.getElementById("degBoxId").value = parseInt(json.result);
+                 document.getElementById("durBoxId").value = parseInt(json.result);
+
+                 });
+        }, 1000);
+
+    function setValue(obj) {
+      var newValue = document.getElementById('degBoxId').value;
+      sparkSetPos(newValue);
+    }
+      
+    function setDurValue(obj) {
+      var durValue = document.getElementById('durBoxId').value;
+      sparkSetDur(durValue);
+    }
+      
+    function fineAdjust(value) {
+      var currentValue = parseInt(document.getElementById('curPos').innerHTML);
+      var setValue = value + currentValue;
+      sparkSetPos(setValue);
+      document.getElementById("degBoxId").value = setValue;
+    }
+
+    function sparkSetPos(newValue) {
+	     var requestURL = "https://api.spark.io/v1/devices/" +deviceID + "/" + setFunc + "/";
+        $.post( requestURL, { params: newValue, access_token: accessToken });
+    }
+      
+    function sparkSetDur(durValue) {
+      var requestURL = "https://api.spark.io/v1/devices/" +deviceID + "/" + setDurFunc + "/";
+        $.post( requestURL, { params: durValue, access_token: accessToken });
+    }
+
+  </script>
+
+</body>
+
+</html>
